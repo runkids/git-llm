@@ -1,0 +1,77 @@
+{
+  "name": "git-llm",
+  "version": "0.1.0",
+  "description": "A universal LLM-powered Git assistant with chat interface. Provide intelligent Git operations and code assistance through a conversational interface.",
+  "type": "module",
+  "author": "Willie",
+  "keywords": ["git", "llm", "ai", "assistant", "cli", "terminal", "lm-studio", "ollama", "chat"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/runkids/git-llm.git"
+  },
+  "homepage": "https://github.com/runkids/git-llm#readme",
+  "bugs": {
+    "url": "https://github.com/runkids/git-llm/issues"
+  },
+  "main": "dist/index.js",
+  "bin": {
+    "gitllm": "./bin/gitllm.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.tsx",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write src/**/*.{ts,tsx}",
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build",
+    "publish:patch": "npm version patch && npm publish",
+    "publish:minor": "npm version minor && npm publish",
+    "publish:major": "npm version major && npm publish"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.60.0",
+    "@google/generative-ai": "^0.24.1",
+    "@langchain/community": "^0.3.53",
+    "@langchain/core": "^0.3.72",
+    "@langchain/langgraph": "^0.4.6",
+    "@langchain/openai": "^0.6.9",
+    "ink": "^4.4.1",
+    "marked": "^15.0.12",
+    "marked-terminal": "^7.3.0",
+    "openai": "^5.15.0",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/jest": "^30.0.0",
+    "@types/marked": "^6.0.0",
+    "@types/marked-terminal": "^6.1.1",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-react": "^7.33.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^30.0.5",
+    "prettier": "^3.0.0",
+    "react-dom": "^18.2.0",
+    "ts-jest": "^29.4.1",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ]
+}

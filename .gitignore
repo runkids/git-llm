@@ -1,0 +1,7 @@
+node_modules
+dist
+.DS_Store
+
+.claude
+CLAUDE.md
+IMPLEMENTATION_PLAN.md
