@@ -2,6 +2,7 @@ import type { Config, ProviderSettings } from '../../config/env.js';
 import { BaseLLMProvider } from './base.js';
 import { OllamaProvider } from './ollama.js';
 import { LMStudioProvider } from './lm-studio.js';
+import { GeminiProvider } from './gemini.js';
 
 export class LLMProviderFactory {
   static createProvider(config: Config, settings: ProviderSettings): BaseLLMProvider {
@@ -11,9 +12,12 @@ export class LLMProviderFactory {
         
       case 'lm-studio':
         return new LMStudioProvider(config, settings);
-        
+
+      case 'gemini':
+        return new GeminiProvider(config, settings);
+
       default:
-        throw new Error(`Unsupported provider: ${config.provider}. Supported providers: ollama, lm-studio`);
+        throw new Error(`Unsupported provider: ${config.provider}. Supported providers: ollama, lm-studio, gemini`);
     }
   }
 
@@ -21,12 +25,13 @@ export class LLMProviderFactory {
     const displayNames = {
       'ollama': 'Ollama',
       'lm-studio': 'LM Studio',
+      'gemini': 'Google Gemini',
     };
-    
+
     return displayNames[provider as keyof typeof displayNames] || provider;
   }
 
   static getSupportedProviders(): string[] {
-    return ['ollama', 'lm-studio'];
+    return ['ollama', 'lm-studio', 'gemini'];
   }
 }

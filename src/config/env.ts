@@ -1,4 +1,4 @@
-export type LLMProvider = 'ollama' | 'lm-studio';
+export type LLMProvider = 'ollama' | 'lm-studio' | 'gemini';
 
 export interface BaseConfig {
   model: string;
@@ -8,6 +8,7 @@ export interface BaseConfig {
 export interface Config extends BaseConfig {
   provider: LLMProvider;
   baseUrl: string;
+  apiKey?: string;
 }
 
 export interface ProviderSettings {
@@ -40,9 +41,17 @@ export function getConfig(): Config {
         model,
         baseUrl: process.env.GIT_LLM_BASE_URL || 'http://localhost:1234/v1',
       };
-      
+
+    case 'gemini':
+      return {
+        provider,
+        model,
+        baseUrl: '', // Not used for Gemini
+        apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
+      };
+
     default:
-      throw new Error(`Unsupported provider: ${provider}. Supported providers: ollama, lm-studio`);
+      throw new Error(`Unsupported provider: ${provider}. Supported providers: ollama, lm-studio, gemini`);
   }
 }
 
@@ -71,6 +80,8 @@ function getDefaultModel(provider: LLMProvider): string {
       return 'llama3.1:8b';
     case 'lm-studio':
       return 'openai/gpt-oss-20b';
+    case 'gemini':
+      return 'gemini-2.5-pro-preview-05-06';
     default:
       return 'llama3.1:8b';
   }
