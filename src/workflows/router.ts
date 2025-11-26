@@ -10,6 +10,7 @@ import { GitBranchWorkflow } from './git/git-branch-workflow.js';
 import { GitRemoteWorkflow } from './git/git-remote-workflow.js';
 import { GitStashWorkflow } from './git/git-stash-workflow.js';
 import { GitUndoWorkflow } from './git/git-undo-workflow.js';
+import { GitActionsWorkflow } from './git/git-actions-workflow.js';
 import { CodeReviewWorkflow } from './code/code-review-workflow.js';
 import { GeneralChatWorkflow } from './general/general-chat-workflow.js';
 
@@ -23,6 +24,7 @@ export class WorkflowRouter {
   private gitRemoteWorkflow: GitRemoteWorkflow;
   private gitStashWorkflow: GitStashWorkflow;
   private gitUndoWorkflow: GitUndoWorkflow;
+  private gitActionsWorkflow: GitActionsWorkflow;
   private codeReviewWorkflow: CodeReviewWorkflow;
   private generalChatWorkflow: GeneralChatWorkflow;
 
@@ -36,6 +38,7 @@ export class WorkflowRouter {
     this.gitRemoteWorkflow = new GitRemoteWorkflow(llm);
     this.gitStashWorkflow = new GitStashWorkflow(llm);
     this.gitUndoWorkflow = new GitUndoWorkflow(llm);
+    this.gitActionsWorkflow = new GitActionsWorkflow(llm);
     this.codeReviewWorkflow = new CodeReviewWorkflow(llm);
     this.generalChatWorkflow = new GeneralChatWorkflow(llm);
   }
@@ -97,21 +100,42 @@ export class WorkflowRouter {
    * Determine specific Git operation type from user input
    */
   private async determineGitOperation(userInput: string): Promise<string> {
+    // First check for git actions patterns (quick operations, workflows)
+    const lower = userInput.toLowerCase();
+    const actionsPatterns = [
+      'quick', 'qs', 'qp', 'wip', 'sync', 'feature', 'feat ', 'hotfix', 'fix ',
+      'release', 'finish', 'update branch', 'history', 'log', 'last commit',
+      'blame', 'contributors', 'unstage', 'discard', 'amend', 'oops',
+      'clean-branches', 'clean branches', 'prune', 'gc', 'garbage',
+      'tag', 'tags', 'cherry-pick', 'squash', 'info', 'whoami', 'remotes'
+    ];
+
+    if (actionsPatterns.some(pattern => lower.includes(pattern))) {
+      return 'actions';
+    }
+
     const prompt = `Analyze the Git operation request and return ONLY the operation type:
 
 User input: "${userInput}"
 
-Return ONE of: status, diff, commit, branch, remote, stash, undo, review
+Return ONE of: status, diff, commit, branch, remote, stash, undo, actions, review
 
 Examples:
 - "git status" → status
-- "show changes" → diff  
+- "show changes" → diff
 - "commit my changes" → commit
 - "create branch" → branch
 - "push changes" → remote
 - "stash my work" → stash
 - "undo last commit" → undo
 - "revert changes" → undo
+- "quick save" → actions
+- "quick push" → actions
+- "sync" → actions
+- "feature branch" → actions
+- "finish branch" → actions
+- "history" → actions
+- "clean branches" → actions
 - "review my code" → review
 
 Return ONLY the operation type, no other text.`;
@@ -119,13 +143,12 @@ Return ONLY the operation type, no other text.`;
     try {
       const response = await this.llm.invoke([new HumanMessage(prompt)]);
       const content = (response.content as string).toLowerCase().trim();
-      
-      const validOperations = ['status', 'diff', 'commit', 'branch', 'remote', 'stash', 'undo', 'review'];
+
+      const validOperations = ['status', 'diff', 'commit', 'branch', 'remote', 'stash', 'undo', 'actions', 'review'];
       const operation = validOperations.find(op => content.includes(op));
-      
+
       return operation || 'status';
     } catch (error) {
-      const lower = userInput.toLowerCase();
       if (lower.includes('undo') || lower.includes('revert') || lower.includes('rollback')) return 'undo';
       if (lower.includes('diff') || lower.includes('change')) return 'diff';
       if (lower.includes('commit')) return 'commit';
@@ -187,8 +210,8 @@ Return ONLY the operation type, no other text.`;
    * Execute specific Git workflow based on operation type
    */
   private async executeGitWorkflow(
-    operation: string, 
-    userInput: string, 
+    operation: string,
+    userInput: string,
     onRoutingUpdate?: (info: RoutingInfo) => void
   ): Promise<WorkflowResult> {
     switch (operation) {
@@ -204,6 +227,8 @@ Return ONLY the operation type, no other text.`;
         return await this.gitStashWorkflow.executeWorkflow(userInput, onRoutingUpdate);
       case 'undo':
         return await this.gitUndoWorkflow.executeWorkflow(userInput, onRoutingUpdate);
+      case 'actions':
+        return await this.gitActionsWorkflow.executeWorkflow(userInput, onRoutingUpdate);
       case 'review':
         return await this.codeReviewWorkflow.executeWorkflow(userInput, onRoutingUpdate);
       case 'status':
@@ -226,7 +251,13 @@ Return ONLY the operation type, no other text.`;
           'Help me commit my changes',
           'Create a new branch',
           'Push my changes',
-          'Stash my work'
+          'Stash my work',
+          'Quick save (qs) - stage all and commit',
+          'Quick push (qp) - save and push',
+          'Feature branch (feature login)',
+          'Finish branch - merge to main',
+          'History - show recent commits',
+          'Clean branches - remove merged'
         ]
       },
       {
