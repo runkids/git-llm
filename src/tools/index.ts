@@ -6,6 +6,7 @@ export { GitBranchTool } from './git/git-branch-tool.js';
 export { GitRemoteTool } from './git/git-remote-tool.js';
 export { GitStashTool } from './git/git-stash-tool.js';
 export { SmartCommitTool } from './git/smart-commit-tool.js';
+export { GitActionsTool } from './git/git-actions-tool.js';
 
 export { CodeReviewTool } from './code/code-review-tool.js';
 
